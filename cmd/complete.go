@@ -10,8 +10,8 @@ import (
 var completecmd = &cobra.Command{
 	Use:     "Complete",
 	Aliases: []string{"complete", "comp"},
-	Short:   "you can complete task hear ",
-	Long:    "you can simply add task look like this:\n",
+	Short:   "Mark a task as complete.",
+	Long:    "Mark a task as complete by providing its ID:\n",
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if id, err := strconv.ParseUint(args[0], 10, 64); err == nil {

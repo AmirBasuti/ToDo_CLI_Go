@@ -10,8 +10,8 @@ import (
 var deletecmd = &cobra.Command{
 	Use:     "Delete",
 	Aliases: []string{"delete", "del"},
-	Short:   "you can add task hear ",
-	Long:    "you can simply add task look like this:\n",
+	Short:   "Delete a task by its ID",
+	Long:    "Use this command to delete a task by providing its ID. For example:\n",
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if id, err := strconv.ParseUint(args[0], 10, 64); err == nil {
