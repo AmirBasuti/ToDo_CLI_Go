@@ -45,13 +45,17 @@ func Add(taskTxt string) error {
 
 // Complete marks a task as complete given its ID.
 // It returns an error if the task update fails, or if the database is not connected.
-func Complete(id uint) error {
+func Complete(arg string) error {
+	id, err := strconv.ParseUint(arg, 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
 	if err := checkDB(); err != nil {
 		return err
 	}
 	db := Database.DB
 
-	res := db.Model(&Model.Todo{}).Where("id = ?", id).Update("complete", true)
+	res := db.Model(&Model.Todo{}).Where("id = ?", uint(id)).Update("complete", true)
 	if res.Error != nil {
 		return fmt.Errorf("failed to update task with ID %d: %w", id, res.Error) // More context
 	}
@@ -136,10 +140,14 @@ func printTable(tasks []Model.Todo, maxIDWidth, maxTaskWidth int) {
 	fmt.Println(separatorLine)
 }
 
-func Delete(id uint) error {
-	if err := checkDB(); err != nil {
-		return err
+func Delete(arg string) error {
+	id, err := strconv.ParseUint(arg, 10, 64)
+	if err != nil {
+		fmt.Println(err)
 	}
+	//if err := checkDB(); err != nil {
+	//	return err
+	//}
 	db := Database.DB
 
 	res := db.Where("id = ?", id).Delete(&Model.Todo{})
