@@ -135,3 +135,17 @@ func printTable(tasks []Model.Todo, maxIDWidth, maxTaskWidth int) {
 	}
 	fmt.Println(separatorLine)
 }
+
+func Delete(id uint) error {
+	if err := checkDB(); err != nil {
+		return err
+	}
+	db := Database.DB
+
+	res := db.Where("id = ?", id).Delete(&Model.Todo{})
+	if res.Error != nil {
+		return fmt.Errorf("failed to delete task with ID %d: %w", id, res.Error)
+	}
+	fmt.Println("Your task has been deleted.")
+	return nil
+}
