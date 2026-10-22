@@ -1,131 +1,80 @@
-# ToDo
+# ToDo CLI in Go
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
+A compact task manager built with Go, Cobra, GORM, and PostgreSQL. It separates command handling from task operations and stores each task's text, completion state, and creation time in a database.
 
-## Table of Contents
+## Commands
 
-- [Project Description](#project-description)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-  - [Add a new task](#add-a-new-task)
-  - [Mark a task as complete](#mark-a-task-as-complete)
-  - [Delete a task](#delete-a-task)
-  - [List all tasks](#list-all-tasks)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Contribution Guidelines](#contribution-guidelines)
-- [License](#license)
+| Command | Behavior |
+|---|---|
+| `add "task description"` | Create a task and print its ID. |
+| `list` | Print the stored tasks in a terminal table. |
+| `complete <task_id>` | Mark a task complete. |
+| `delete <task_id>` | Ask for confirmation, then delete a task. |
 
-## Project Description
+The root command also contains an interactive menu. The explicit subcommands are the clearer interface for the current implementation.
 
-ToDo is a command-line interface (CLI) application built with Cobra that allows you to manage your to-do list efficiently. You can add, complete, delete, and list tasks.
+## Requirements
 
-## Features
+- Go 1.22.5 or later, as declared in `go.mod`.
+- PostgreSQL and a dedicated development database.
+- A `.env` file in the directory from which the application is run.
 
-- Add a new task
-- Mark a task as complete
-- Delete a task
-- List all tasks
-
-## Prerequisites
-
-- Go 1.22.5 or later
-- PostgreSQL database
-
-## Installation
-
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/AmirBasuti/ToDo_CLI_Go.git
-   cd ToDo_CLI_Go
-   ```
-
-2. Install dependencies:
-   ```sh
-   go mod tidy
-   ```
-
-## Getting Started
-
-1. Set up the database connection:
-   - Create a `.env` file in the root directory of the project.
-   - Add the following environment variables to the `.env` file:
-     ```env
-     DB_HOST=your_database_host
-     DB_USER=your_database_user
-     DB_PASSWORD=your_database_password
-     DB_NAME=your_database_name
-     DB_PORT=your_database_port
-     ```
-
-2. Run the application:
-   ```sh
-   go run main.go
-   ```
-
-## Usage
-
-### Add a new task
+## Build
 
 ```sh
-ToDo add "Buy groceries"
+git clone https://github.com/AmirBasuti/ToDo_CLI_Go.git
+cd ToDo_CLI_Go
+go mod download
+go build -mod=readonly ./...
 ```
 
-### Mark a task as complete
+The source compiled with Go 1.22.5 on Windows/amd64 during the 22 October 2026 review. Database commands were not executed during that review; compilation alone does not verify the database setup or command behavior.
+
+## Database configuration
+
+Create a local `.env` file using your own PostgreSQL connection details:
+
+```dotenv
+DB_HOST=localhost
+DB_USER=<your-local-database-user>
+DB_PASSWORD=<your-local-database-password>
+DB_NAME=<your-development-database>
+DB_PORT=5432
+```
+
+Keep this file private. The code explicitly loads `.env`, so setting environment variables alone does not replace the file requirement in this revision.
+
+**Schema setup is currently incomplete:** `internal/Database/DataBase.go` defines a migration helper, but `main.go` does not invoke it. A fresh database therefore needs its `todos` table initialized to match `internal/Model/TodoModel.go` before task operations can work. The repository does not yet provide a verified, portable bootstrap command.
+
+After the database and schema are prepared, the source entry point accepts these commands:
 
 ```sh
-ToDo complete 42
+go run . add "Read the Go documentation"
+go run . list
+go run . complete 1
+go run . delete 1
 ```
 
-### Delete a task
+Use the ID returned by `add`; the example ID is illustrative. Deletion prompts for confirmation.
 
-```sh
-ToDo delete 123
+## Project layout
+
+```text
+main.go                    Database connection and CLI entry point
+cmd/                       Cobra commands and interactive menu
+internal/Database/         PostgreSQL connection and migration helper
+internal/Model/            Task model
+internal/TodoBehavior/     Task operations and terminal formatting
 ```
 
-### List all tasks
+## Current limitations
 
-```sh
-ToDo list
-```
-
-## Configuration
-
-The application uses a `.env` file to configure the database connection. Make sure to create this file in the root directory of the project and add the following environment variables:
-
-```env
-DB_HOST=your_database_host
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-DB_PORT=your_database_port
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database connection error**:
-   - Ensure that the database server is running and accessible.
-   - Verify the database connection details in the `.env` file.
-
-2. **Command not found**:
-   - Make sure you have installed the dependencies using `go mod tidy`.
-   - Ensure that you are running the commands from the project root directory.
-
-## Contribution Guidelines
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -m 'Add some feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Open a pull request.
+- There are no automated test files in the current revision.
+- The workflow's Go version is older than the version declared in `go.mod`; its result has not been verified here.
+- Database initialization and connection-error handling need improvement before the project offers a reliable fresh-install experience.
+- Interactive menu dispatch and multi-word input need validation. Quoted task descriptions in explicit subcommands follow a different input path.
+- A tracked Windows executable is present, but its relationship to the current source has not been verified. Build from source when evaluating the project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The tracked `LICENSE` file is empty. No usable license grant is specified at this revision.
